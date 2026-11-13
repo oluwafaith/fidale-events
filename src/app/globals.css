@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #fffdf9;
+    --foreground: #1c1917;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Custom subtle African geometric pattern background utility */
+.bg-adire-pattern {
+  background-image: radial-gradient(rgba(255, 75, 38, 0.08) 1.5px, transparent 1.5px),
+    radial-gradient(rgba(126, 34, 206, 0.06) 1.5px, #fffdf9 1.5px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
+}
+
+.bg-aso-weave {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(212, 175, 55, 0.06) 0px,
+    rgba(212, 175, 55, 0.06) 2px,
+    transparent 2px,
+    transparent 10px
+  );
+}
+
