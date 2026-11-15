@@ -1,6 +1,17 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import {
+  AuthResult,
+  SessionUser,
+  clearSession,
+  ensureDemoAccounts,
+  getSession,
+  logInWithEmail,
+  requestPhoneOtp,
+  signUpWithEmail,
+  verifyPhoneOtp,
+} from "@/lib/auth-store";
 import {
   GuestItem,
   GiftItem,
@@ -46,20 +57,22 @@ export interface CoupleSiteConfig {
 
 export type EventSiteConfig = CoupleSiteConfig;
 
-export interface AuthUser {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  role: "couple" | "vendor" | "admin";
-  avatarUrl?: string;
-  weddingSlug?: string;
-}
+export type AuthUser = SessionUser;
 
 interface FidaleEventsContextType {
   user: AuthUser | null;
-  login: (emailOrPhone: string, role?: "couple" | "vendor", name?: string) => void;
-  signup: (data: { name: string; email: string; phone?: string; role: "couple" | "vendor" }) => void;
+  /** false until the session has been read from storage (avoids redirect flicker) */
+  authReady: boolean;
+  login: (email: string, password: string, remember?: boolean) => Promise<AuthResult>;
+  signup: (data: {
+    name: string;
+    email: string;
+    phone?: string;
+    password: string;
+    role: "couple" | "vendor";
+  }) => Promise<AuthResult>;
+  requestOtp: typeof requestPhoneOtp;
+  verifyOtp: (phone: string, code: string, remember?: boolean) => AuthResult;
   logout: () => void;
   siteConfig: CoupleSiteConfig;
   updateSiteConfig: (partial: Partial<CoupleSiteConfig>) => void;
@@ -113,43 +126,56 @@ const DEFAULT_SITE_CONFIG: CoupleSiteConfig = {
 const FidaleEventsContext = createContext<FidaleEventsContextType | undefined>(undefined);
 
 export function FidaleEventsProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>({
-    id: "u-101",
-    name: "Adaeze & Tunde",
-    email: "adaeze.nwosu@gmail.com",
-    phone: "+234 803 555 0192",
-    role: "couple",
-    weddingSlug: "adaeze-and-tunde",
-  });
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    ensureDemoAccounts().finally(() => {
+      setUser(getSession());
+      setAuthReady(true);
+    });
+  }, []);
   const [siteConfig, setSiteConfig] = useState<CoupleSiteConfig>(DEFAULT_SITE_CONFIG);
   const [guests, setGuests] = useState<GuestItem[]>(INITIAL_GUESTS);
   const [giftFunds, setGiftFunds] = useState<GiftItem[]>(INITIAL_GIFT_FUNDS);
   const [transactions, setTransactions] = useState<GiftTransaction[]>(INITIAL_TRANSACTIONS);
   const [vendorLeads, setVendorLeads] = useState<VendorLead[]>(VENDOR_LEADS_MOCK);
 
-  const login = (emailOrPhone: string, role: "couple" | "vendor" = "couple", name?: string) => {
-    setUser({
-      id: `u-${Date.now()}`,
-      name: name || (role === "couple" ? "Adaeze & Tunde" : "Bimpe Onakoya Artistry"),
-      email: emailOrPhone.includes("@") ? emailOrPhone : `${emailOrPhone}@phone.fidale`,
-      phone: emailOrPhone.startsWith("+") ? emailOrPhone : "+234 803 000 0000",
-      role,
-      weddingSlug: role === "couple" ? siteConfig.slug : undefined,
-    });
+  const login = async (email: string, password: string, remember = true) => {
+    await ensureDemoAccounts();
+    const res = await logInWithEmail(email, password, remember);
+    if (res.ok) setUser(res.user);
+    return res;
   };
 
-  const signup = (data: { name: string; email: string; phone?: string; role: "couple" | "vendor" }) => {
-    setUser({
-      id: `u-${Date.now()}`,
-      name: data.name,
-      email: data.email,
-      phone: data.phone || "+234 803 000 0000",
-      role: data.role,
-      weddingSlug: data.role === "couple" ? "my-wedding" : undefined,
-    });
+  const signup: FidaleEventsContextType["signup"] = async (data) => {
+    const res = await signUpWithEmail(data);
+    if (res.ok) {
+      setUser(res.user);
+      if (data.role === "couple") {
+        // New couples start with their own names on a fresh site config
+        setSiteConfig((prev) => ({
+          ...prev,
+          coupleNames: data.name,
+          slug: data.name
+            .toLowerCase()
+            .replace(/&/g, "and")
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, ""),
+        }));
+      }
+    }
+    return res;
+  };
+
+  const verifyOtp = (phone: string, code: string, remember = true) => {
+    const res = verifyPhoneOtp(phone, code, remember);
+    if (res.ok) setUser(res.user);
+    return res;
   };
 
   const logout = () => {
+    clearSession();
     setUser(null);
   };
 
@@ -267,8 +293,11 @@ export function FidaleEventsProvider({ children }: { children: React.ReactNode }
     <FidaleEventsContext.Provider
       value={{
         user,
+        authReady,
         login,
         signup,
+        requestOtp: requestPhoneOtp,
+        verifyOtp,
         logout,
         siteConfig,
         updateSiteConfig,

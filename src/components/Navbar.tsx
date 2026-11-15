@@ -19,20 +19,37 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useFidaleEvents } from "@/context/FidaleEventsContext";
+import { homePathForRole } from "@/lib/auth-store";
 
-const NAV_ITEMS = [
-  { href: "/", label: "Home" },
+type NavItem = { href: string; label: string; badge?: string };
+
+const PUBLIC_NAV: NavItem[] = [
   { href: "/templates", label: "Templates" },
-  { href: "/vendors", label: "Vendors" },
-  { href: "/dashboard", label: "Couple Studio", badge: "Live" },
-  { href: "/vendor-dashboard", label: "Vendor Portal" },
-  { href: "/admin", label: "Admin HQ" },
+  { href: "/vendors", label: "Find Vendors" },
+  { href: "/signup?role=vendor", label: "For Vendors" },
 ];
+
+const ROLE_NAV: Record<"couple" | "vendor" | "admin", NavItem> = {
+  couple: { href: "/dashboard", label: "My Studio" },
+  vendor: { href: "/vendor-dashboard", label: "Vendor Dashboard" },
+  admin: { href: "/admin", label: "Admin", badge: "Staff" },
+};
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useFidaleEvents();
+
+  const NAV_ITEMS: NavItem[] = user
+    ? [...PUBLIC_NAV.filter((i) => !(user.role === "vendor" && i.label === "For Vendors")), ROLE_NAV[user.role]]
+    : PUBLIC_NAV;
+
+  const handleLogout = () => {
+    logout();
+    setUserDropdownOpen(false);
+    setMobileMenuOpen(false);
+    router.push("/");
+  };
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -98,12 +115,7 @@ export function Navbar() {
             {/* Middle: Clean Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-1">
               {NAV_ITEMS.map((item) => {
-                const isActive =
-                  item.href === "/"
-                    ? pathname === "/"
-                    : item.href.startsWith("/#")
-                    ? false
-                    : pathname?.startsWith(item.href);
+                const isActive = !item.href.includes("?") && pathname?.startsWith(item.href);
 
                 return (
                   <Link
@@ -154,38 +166,45 @@ export function Navbar() {
                       </div>
 
                       <Link
-                        href="/dashboard"
+                        href={homePathForRole(user.role)}
                         onClick={() => setUserDropdownOpen(false)}
                         className="flex items-center gap-2 px-3 py-2 rounded-xl text-stone-700 hover:bg-stone-50 hover:text-stone-900 font-medium"
                       >
-                        <LayoutDashboard className="w-4 h-4 text-coral-500" />
-                        <span>Couple Planning Studio</span>
+                        {user.role === "admin" ? (
+                          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                        ) : user.role === "vendor" ? (
+                          <Briefcase className="w-4 h-4 text-aso-600" />
+                        ) : (
+                          <LayoutDashboard className="w-4 h-4 text-coral-500" />
+                        )}
+                        <span>{ROLE_NAV[user.role].label}</span>
                       </Link>
 
-                      <Link
-                        href="/w/adaeze-and-tunde"
-                        onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-stone-700 hover:bg-stone-50 hover:text-stone-900 font-medium"
-                      >
-                        <Heart className="w-4 h-4 text-coral-500 fill-coral-500" />
-                        <span>Live Wedding Website</span>
-                      </Link>
+                      {user.role === "couple" && (
+                        <Link
+                          href="/w/adaeze-and-tunde"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-stone-700 hover:bg-stone-50 hover:text-stone-900 font-medium"
+                        >
+                          <Heart className="w-4 h-4 text-coral-500 fill-coral-500" />
+                          <span>View my live site</span>
+                        </Link>
+                      )}
 
-                      <Link
-                        href="/vendor-dashboard"
-                        onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-stone-700 hover:bg-stone-50 hover:text-stone-900 font-medium"
-                      >
-                        <Briefcase className="w-4 h-4 text-aso-600" />
-                        <span>Vendor Portal</span>
-                      </Link>
+                      {user.role === "vendor" && (
+                        <Link
+                          href="/vendors"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-stone-700 hover:bg-stone-50 hover:text-stone-900 font-medium"
+                        >
+                          <Store className="w-4 h-4 text-aso-600" />
+                          <span>See marketplace</span>
+                        </Link>
+                      )}
 
                       <div className="border-t border-stone-100 pt-1 mt-1">
                         <button
-                          onClick={() => {
-                            logout();
-                            setUserDropdownOpen(false);
-                          }}
+                          onClick={handleLogout}
                           className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 font-medium text-left"
                         >
                           <LogOut className="w-4 h-4" />
@@ -263,10 +282,7 @@ export function Navbar() {
                     Signed in as <strong>{user.name}</strong> ({user.role})
                   </div>
                   <button
-                    onClick={() => {
-                      logout();
-                      setMobileMenuOpen(false);
-                    }}
+                    onClick={handleLogout}
                     className="w-full text-center py-2 rounded-xl text-xs font-bold text-rose-600 bg-rose-50"
                   >
                     Log Out
