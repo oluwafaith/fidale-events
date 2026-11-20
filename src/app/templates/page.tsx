@@ -141,35 +141,98 @@ export default function TemplatesPage() {
                 }`}
               >
                 <div>
-                  {/* Visual Header Banner */}
-                  <div className={`h-52 ${tpl.previewGradient} p-6 flex flex-col justify-between text-white relative overflow-hidden`}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-black/30 backdrop-blur-sm">
+                  {/* Visual Header Banner — Reflects Layout Variant */}
+                  <div
+                    className={`h-56 p-5 flex flex-col justify-between relative overflow-hidden ${
+                      tpl.layoutVariant === "editorial-minimal"
+                        ? "bg-[#FAF8F5] text-stone-900 border-b border-stone-200"
+                        : `${tpl.previewGradient} text-white`
+                    }`}
+                  >
+                    <div className="flex items-center justify-between relative z-10">
+                      <span
+                        className={`text-[11px] font-bold px-3 py-1 rounded-full ${
+                          tpl.layoutVariant === "editorial-minimal"
+                            ? "bg-stone-900 text-white"
+                            : "bg-black/30 backdrop-blur-sm text-white"
+                        }`}
+                      >
                         {tpl.tag}
                       </span>
                       {isCurrentlyActive ? (
-                        <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-white text-stone-950 flex items-center gap-1">
+                        <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-white text-stone-950 flex items-center gap-1 shadow-sm">
                           <Check className="w-3 h-3 text-emerald-600 stroke-[3]" />
                           Currently Active
                         </span>
                       ) : (
-                        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-sm">
+                        <span
+                          className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
+                            tpl.layoutVariant === "editorial-minimal"
+                              ? "bg-stone-200 text-stone-800"
+                              : "bg-white/20 backdrop-blur-sm text-white"
+                          }`}
+                        >
                           {tpl.isPremium ? "Premium (₦15k)" : "Free"}
                         </span>
                       )}
                     </div>
 
-                    <div>
-                      <div className="text-[10px] uppercase tracking-widest opacity-80">
-                        {tpl.eventTypes.join(" • ")}
+                    {/* Mini layout thumbnail preview */}
+                    {tpl.layoutVariant === "royal-crest" && (
+                      <div className="mx-auto text-center space-y-1">
+                        <div className="w-11 h-11 rounded-full border-2 border-amber-300/80 bg-black/25 mx-auto flex items-center justify-center text-xs font-bold text-amber-200">
+                          A &amp; T
+                        </div>
+                        <div className="font-display text-lg font-bold">Adaeze &amp; Tunde</div>
                       </div>
-                      <div className="font-display text-2xl font-bold">
-                        {tpl.name}
+                    )}
+
+                    {tpl.layoutVariant === "editorial-minimal" && (
+                      <div className="grid grid-cols-12 gap-3 items-center my-auto">
+                        <div className="col-span-7 space-y-1">
+                          <div className="text-[9px] uppercase tracking-[0.2em] text-stone-500">14 Nov 2026 • Lagos</div>
+                          <div className="font-display text-xl font-bold text-stone-950 leading-tight">Adaeze &amp; Tunde</div>
+                          <div className="inline-block text-[9px] px-2.5 py-0.5 rounded-full bg-stone-900 text-white font-bold">RSVP Online</div>
+                        </div>
+                        <div className="col-span-5 aspect-[4/5] rounded-xl bg-stone-900 text-amber-200 flex items-center justify-center text-xs font-bold shadow">
+                          A &amp; T
+                        </div>
                       </div>
-                      <div className="text-xs opacity-90 mt-0.5">
-                        Interactive Mobile & Web Layout
+                    )}
+
+                    {tpl.layoutVariant === "emerald-marquee" && (
+                      <div className="border border-amber-300/60 rounded-2xl p-3 text-center bg-black/20 my-auto">
+                        <div className="text-[9px] uppercase tracking-[0.2em] text-amber-200">Grand Marquee</div>
+                        <div className="font-display text-lg font-bold">Adaeze &amp; Tunde</div>
                       </div>
-                    </div>
+                    )}
+
+                    {tpl.layoutVariant === "heritage-arch" && (
+                      <div className="border-2 border-amber-200/70 rounded-t-[60px] rounded-b-xl p-3 text-center bg-black/20 mx-4 my-auto">
+                        <div className="text-[9px] uppercase tracking-[0.2em] text-amber-200">Heritage Union</div>
+                        <div className="font-display text-lg font-bold">Adaeze &amp; Tunde</div>
+                      </div>
+                    )}
+
+                    {(tpl.layoutVariant === "lagos-owambe" || tpl.layoutVariant === "celebration-classic") && (
+                      <div>
+                        <div className="text-[10px] uppercase tracking-widest opacity-80">
+                          {tpl.eventTypes.join(" • ")}
+                        </div>
+                        <div className="font-display text-2xl font-bold">
+                          {tpl.eventTypes.includes("Baby Shower")
+                            ? "Baby Zara's Shower"
+                            : tpl.eventTypes.includes("Birthday")
+                            ? "Chief Alabi at 60"
+                            : tpl.eventTypes.includes("Celebration of Life")
+                            ? "In Loving Memory"
+                            : "Adaeze & Tunde"}
+                        </div>
+                        <div className="text-xs opacity-90 mt-0.5">
+                          Interactive Mobile &amp; Web Layout
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Body Info */}

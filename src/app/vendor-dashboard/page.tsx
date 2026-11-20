@@ -20,9 +20,10 @@ import { useFidaleEvents } from "@/context/FidaleEventsContext";
 import { formatNaira } from "@/lib/mock-data";
 
 export default function VendorDashboardPage() {
-  const { vendorLeads } = useFidaleEvents();
+  const { vendorLeads, user } = useFidaleEvents();
   const [currentTier, setCurrentTier] = useState<"Free" | "Standard" | "Featured">("Free");
   const [upgradedBanner, setUpgradedBanner] = useState(false);
+  const [leadStatuses, setLeadStatuses] = useState<Record<string, string>>({});
 
   const handleSelectTier = (tier: "Free" | "Standard" | "Featured") => {
     setCurrentTier(tier);
@@ -48,17 +49,17 @@ export default function VendorDashboardPage() {
               </span>
             </div>
             <h1 className="font-display text-2xl sm:text-3xl font-bold text-stone-900 mt-1">
-              Bimpe Onakoya Bridal Artistry
+              {user?.name || "Bimpe Onakoya Bridal Artistry"}
             </h1>
             <p className="text-xs text-stone-500">
               Lekki Phase 1, Lagos • Category: Makeup Artists • Price Band: ₦450k – ₦1.2M
             </p>
           </div>
 
-          {/* Interactive Subscription Tier Switcher (PRD §7) */}
+          {/* Subscription Plan Switcher */}
           <div className="bg-stone-100 p-1.5 rounded-2xl flex flex-wrap items-center gap-1">
             <span className="text-[11px] font-bold text-stone-500 px-2">
-              Simulate Plan:
+              Active Plan:
             </span>
             {(
               [
@@ -235,9 +236,23 @@ export default function VendorDashboardPage() {
                         “{lead.message}”
                       </p>
                       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                        <span className="text-xs font-bold text-stone-700">
-                          Couple WhatsApp: <span className="text-emerald-700">{lead.phone}</span>
-                        </span>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs font-bold text-stone-700">
+                            Client WhatsApp: <span className="text-emerald-700">{lead.phone}</span>
+                          </span>
+                          <select
+                            value={leadStatuses[lead.id] || lead.status}
+                            onChange={(e) =>
+                              setLeadStatuses((prev) => ({ ...prev, [lead.id]: e.target.value }))
+                            }
+                            className="text-[11px] font-bold px-2.5 py-1 rounded-lg border border-stone-200 bg-stone-50 text-stone-700"
+                          >
+                            <option value="New">Status: New</option>
+                            <option value="Replied via WhatsApp">Status: Replied</option>
+                            <option value="Quote Sent">Status: Quote Sent</option>
+                            <option value="Booked">Status: Booked</option>
+                          </select>
+                        </div>
                         <a
                           href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, "")}`}
                           target="_blank"

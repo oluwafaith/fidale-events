@@ -6,11 +6,20 @@ export type EventCategory =
   | "Celebration of Life"
   | "Bridal Shower";
 
+export type TemplateLayoutVariant =
+  | "lagos-owambe"
+  | "royal-crest"
+  | "editorial-minimal"
+  | "emerald-marquee"
+  | "heritage-arch"
+  | "celebration-classic";
+
 export interface WeddingTemplate {
   id: string;
   name: string;
   tag: string;
   style: "Afro-Elegant" | "Vibrant Naija" | "Contemporary" | "Baby & Floral" | "Milestone Royale";
+  layoutVariant: TemplateLayoutVariant;
   eventTypes: EventCategory[];
   isPremium: boolean;
   primaryColor: string;
@@ -122,6 +131,7 @@ export const WEDDING_TEMPLATES: WeddingTemplate[] = [
     name: "Eko Coral & Gold",
     tag: "Most Popular in Lagos",
     style: "Vibrant Naija",
+    layoutVariant: "lagos-owambe",
     eventTypes: ["Wedding", "Bridal Shower"],
     isPremium: false,
     primaryColor: "#FF4B26",
@@ -141,6 +151,7 @@ export const WEDDING_TEMPLATES: WeddingTemplate[] = [
     name: "Royal Aso-Oke Purple",
     tag: "Afro-Elegant Flagship",
     style: "Afro-Elegant",
+    layoutVariant: "royal-crest",
     eventTypes: ["Wedding", "Birthday"],
     isPremium: false,
     primaryColor: "#581C87",
@@ -148,18 +159,39 @@ export const WEDDING_TEMPLATES: WeddingTemplate[] = [
     accentColor: "#FF4B26",
     bgClass: "from-aso-800 via-purple-900 to-amber-600",
     previewGradient: "bg-gradient-to-br from-[#3B0764] via-[#6B21A8] to-[#D4AF37]",
-    description: "Inspired by woven Yoruba sanyan & alaari fabrics with rich plum and champagne metallic accents.",
-    culturalHighlight: "Built-in Family Lineage Banner & VIP High Table Tagging",
+    description: "Inspired by woven Yoruba sanyan & alaari fabrics with a royal monogram crest and champagne gold accents.",
+    culturalHighlight: "Monogram Crest Hero, Family Lineage Banner & VIP High Table Tagging",
     fontClass: "font-display",
     cardStyle: "bg-[#FCF9FF] border-2 border-aso-200 shadow-sm rounded-3xl",
     accentButton: "bg-aso-700 hover:bg-aso-800 text-white shadow-aso-700/20",
     accentBadge: "bg-aso-50 text-aso-800 border-aso-200",
   },
   {
+    id: "ikoyi-minimal-ivory",
+    name: "Ikoyi Minimalist Ivory",
+    tag: "Modern Editorial",
+    style: "Contemporary",
+    layoutVariant: "editorial-minimal",
+    eventTypes: ["Wedding", "Bridal Shower"],
+    isPremium: false,
+    primaryColor: "#1C1917",
+    secondaryColor: "#78716C",
+    accentColor: "#D97706",
+    bgClass: "from-stone-900 via-stone-800 to-stone-700",
+    previewGradient: "bg-gradient-to-br from-[#292524] via-[#44403C] to-[#A8A29E]",
+    description: "Airy magazine-style editorial layout with crisp serif typography, clean white space, and split-screen hero.",
+    culturalHighlight: "Split Editorial Hero, Minimal Timeline & Effortless Guest FAQ",
+    fontClass: "font-display",
+    cardStyle: "bg-white border border-stone-200 shadow-none rounded-2xl",
+    accentButton: "bg-stone-900 hover:bg-stone-800 text-white",
+    accentBadge: "bg-stone-100 text-stone-800 border-stone-200",
+  },
+  {
     id: "pastel-peach-blossom",
     name: "Safari Peach Blossom & Gold",
     tag: "Baby Shower & Dedication",
     style: "Baby & Floral",
+    layoutVariant: "celebration-classic",
     eventTypes: ["Baby Shower", "Child Dedication"],
     isPremium: false,
     primaryColor: "#FB923C",
@@ -179,6 +211,7 @@ export const WEDDING_TEMPLATES: WeddingTemplate[] = [
     name: "Royal Child Naming & Indigo",
     tag: "Naming & Dedication",
     style: "Afro-Elegant",
+    layoutVariant: "celebration-classic",
     eventTypes: ["Child Dedication", "Baby Shower"],
     isPremium: false,
     primaryColor: "#1E3A8A",
@@ -198,6 +231,7 @@ export const WEDDING_TEMPLATES: WeddingTemplate[] = [
     name: "Golden Jubilee Royale",
     tag: "50th/60th/70th Birthday",
     style: "Milestone Royale",
+    layoutVariant: "celebration-classic",
     eventTypes: ["Birthday", "Celebration of Life"],
     isPremium: true,
     primaryColor: "#D97706",
@@ -217,6 +251,7 @@ export const WEDDING_TEMPLATES: WeddingTemplate[] = [
     name: "Retro Lagos Afrobeats Sunset",
     tag: "30th/40th Birthday & Fiesta",
     style: "Vibrant Naija",
+    layoutVariant: "celebration-classic",
     eventTypes: ["Birthday", "Bridal Shower"],
     isPremium: false,
     primaryColor: "#E11D48",
@@ -236,6 +271,7 @@ export const WEDDING_TEMPLATES: WeddingTemplate[] = [
     name: "Eternal Grace & Pearl Memorial",
     tag: "Celebration of Life",
     style: "Contemporary",
+    layoutVariant: "celebration-classic",
     eventTypes: ["Celebration of Life"],
     isPremium: false,
     primaryColor: "#4B5563",
@@ -255,6 +291,7 @@ export const WEDDING_TEMPLATES: WeddingTemplate[] = [
     name: "Abuja Emerald Luxe",
     tag: "Grand Ballroom Marquee",
     style: "Afro-Elegant",
+    layoutVariant: "emerald-marquee",
     eventTypes: ["Wedding", "Birthday"],
     isPremium: true,
     primaryColor: "#064E3B",
@@ -274,6 +311,7 @@ export const WEDDING_TEMPLATES: WeddingTemplate[] = [
     name: "Benin Bronze & Ivory",
     tag: "Cultural Dowry & Heritage",
     style: "Afro-Elegant",
+    layoutVariant: "heritage-arch",
     eventTypes: ["Wedding", "Birthday"],
     isPremium: false,
     primaryColor: "#9A3412",
@@ -281,7 +319,7 @@ export const WEDDING_TEMPLATES: WeddingTemplate[] = [
     accentColor: "#D97706",
     bgClass: "from-amber-800 via-orange-900 to-yellow-600",
     previewGradient: "bg-gradient-to-br from-[#7C2D12] via-[#B45309] to-[#FDE68A]",
-    description: "Editorial celebration of Edo/Delta coral royalty and warm terracotta architecture.",
+    description: "Editorial celebration of Edo/Delta coral royalty and warm terracotta arch architecture.",
     culturalHighlight: "Traditional Dowry & Igba Nkwu / Okuku showcase layout",
     fontClass: "font-display",
     cardStyle: "bg-[#FFFBF5] border-2 border-amber-300/80 shadow-sm rounded-3xl",

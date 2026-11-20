@@ -32,7 +32,7 @@ const CATEGORIES = [
 ];
 
 export default function VendorMarketplacePage() {
-  const { addVendorLead } = useFidaleEvents();
+  const { addVendorLead, user } = useFidaleEvents();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState<string>("All");
@@ -95,22 +95,22 @@ export default function VendorMarketplacePage() {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-xs font-bold mb-3">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>KYC & CAC-Verified Nigerian Wedding Marketplace</span>
+                <span>KYC &amp; CAC-Verified Nigerian Event Marketplace</span>
               </div>
               <h1 className="font-display text-3xl sm:text-5xl font-bold">
-                Find Trusted Wedding Vendors
+                Find Trusted Event Vendors
               </h1>
               <p className="text-sm sm:text-base text-stone-300 mt-2 max-w-2xl">
-                Compare transparent Naira price bands, check Saturday date availability, and request
+                Compare transparent Naira price bands, check weekend availability, and request
                 instant WhatsApp quotes from verified professionals in Lagos, Abuja, and Port Harcourt.
               </p>
             </div>
 
             <Link
-              href="/vendor-dashboard"
+              href={user?.role === "vendor" ? "/vendor-dashboard" : "/signup?role=vendor"}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-white self-start md:self-auto"
             >
-              <span>Are you a vendor? Open Vendor Portal</span>
+              <span>{user?.role === "vendor" ? "Open Vendor Dashboard" : "Are you a vendor? List your business"}</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
           </div>

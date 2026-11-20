@@ -65,9 +65,9 @@ export default function AdminBackOfficePage() {
   const [kycList, setKycList] = useState<KycApplicant[]>(INITIAL_KYC_QUEUE);
   const [primaryGateway, setPrimaryGateway] = useState<"Paystack" | "Flutterwave">("Paystack");
 
-  const handleApproveKyc = (id: string) => {
+  const handleUpdateKycStatus = (id: string, status: KycApplicant["status"]) => {
     setKycList((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, status: "Approved" } : item))
+      prev.map((item) => (item.id === id ? { ...item, status } : item))
     );
   };
 
@@ -86,18 +86,18 @@ export default function AdminBackOfficePage() {
               </span>
             </div>
             <h1 className="font-display text-2xl sm:text-3xl font-bold mt-1">
-              Platform Operations, KYC & PRD KPI Tracker
+              Platform Operations, Vendor KYC &amp; Settlements
             </h1>
           </div>
 
-          {/* Gateway Failover Control (PRD §11) */}
+          {/* Gateway Failover Control */}
           <div className="bg-stone-900 border border-stone-800 rounded-2xl p-3 flex items-center gap-3 text-xs">
             <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
               <Activity className="w-4 h-4" />
               <span>99.8% Uptime</span>
             </div>
             <span className="text-stone-600">|</span>
-            <span className="text-stone-300">Active Primary Gateway:</span>
+            <span className="text-stone-300">Primary Gateway:</span>
             <button
               onClick={() =>
                 setPrimaryGateway(primaryGateway === "Paystack" ? "Flutterwave" : "Paystack")
@@ -105,17 +105,17 @@ export default function AdminBackOfficePage() {
               className="px-3 py-1 rounded-lg bg-coral-500 hover:bg-coral-600 text-white font-bold inline-flex items-center gap-1.5 transition-colors"
             >
               <RefreshCw className="w-3 h-3" />
-              <span>{primaryGateway} (Click to Failover)</span>
+              <span>{primaryGateway} (Switch Failover)</span>
             </button>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
-        {/* PRD §3 KPI Scorecard */}
+        {/* Platform Growth KPI Scorecard */}
         <div>
           <h2 className="font-display font-bold text-lg text-stone-900 mb-3">
-            PRD §3 North-Star KPIs & Month 12 Targets
+            Platform Growth &amp; 12-Month Targets
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
@@ -188,19 +188,32 @@ export default function AdminBackOfficePage() {
                     </div>
                   </div>
 
-                  <div>
+                  <div className="flex items-center gap-2">
                     {item.status === "Approved" ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
                         <CheckCircle2 className="w-4 h-4" />
                         Verified Badge Issued
                       </span>
+                    ) : item.status === "Flagged" ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 font-bold border border-rose-200">
+                        <AlertTriangle className="w-4 h-4" />
+                        Flagged for Review
+                      </span>
                     ) : (
-                      <button
-                        onClick={() => handleApproveKyc(item.id)}
-                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-colors"
-                      >
-                        Approve & Issue CAC Badge
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleUpdateKycStatus(item.id, "Approved")}
+                          className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-colors"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleUpdateKycStatus(item.id, "Flagged")}
+                          className="px-3 py-2 rounded-xl border border-stone-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-stone-600 font-bold transition-colors"
+                        >
+                          Flag
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
