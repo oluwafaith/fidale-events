@@ -21,6 +21,8 @@ import {
   Baby,
   Cake,
   Flame,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useFidaleEvents } from "@/context/FidaleEventsContext";
 import {
@@ -140,6 +142,21 @@ export function InteractiveEventView({
     useState<GiftTransaction["paymentMethod"]>("Paystack Transfer");
   const [isPublicGift, setIsPublicGift] = useState(true);
   const [giftSuccessReceipt, setGiftSuccessReceipt] = useState<string | null>(null);
+
+  // Photo Gallery Pagination, Album Filter & Lightbox State
+  const [galleryAlbum, setGalleryAlbum] = useState<string>("All");
+  const [showAllPhotos, setShowAllPhotos] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const allPhotos = activeEvent.galleryImages || [];
+  const filteredPhotos =
+    galleryAlbum === "All"
+      ? allPhotos
+      : allPhotos.filter((p) => (p.album || "Moments") === galleryAlbum);
+  const visiblePhotos = showAllPhotos ? filteredPhotos : filteredPhotos.slice(0, 6);
+  const availableAlbums = Array.from(
+    new Set(allPhotos.map((p) => p.album || "Moments"))
+  );
 
   const selectedGift = giftFunds.find((g: GiftItem) => g.id === activeGiftId) || giftFunds[0];
   const calculatedFee = Math.round(giftAmount * 0.015);
@@ -562,35 +579,144 @@ export function InteractiveEventView({
           </div>
         </section>
 
-        {/* PHOTO GALLERY (When host uploads photos) */}
-        {activeEvent.galleryImages && activeEvent.galleryImages.length > 0 && (
-          <section className="space-y-4">
-            <div className="text-center">
+        {/* PHOTO GALLERY (Supports large photo sets with album filter, Show More & Lightbox) */}
+        {allPhotos.length > 0 && (
+          <section className="space-y-5">
+            <div className="text-center space-y-2">
               <span className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${activeTemplate.accentBadge}`}>
-                Photo Gallery
+                Photo Gallery • {allPhotos.length} {allPhotos.length === 1 ? "Photo" : "Photos"}
               </span>
               <h2 className="text-2xl font-bold mt-1">Our Moments</h2>
+
+              {availableAlbums.length > 1 && (
+                <div className="flex flex-wrap justify-center gap-1.5 pt-2">
+                  {["All", ...availableAlbums].map((alb) => (
+                    <button
+                      key={alb}
+                      type="button"
+                      onClick={() => {
+                        setGalleryAlbum(alb);
+                        setShowAllPhotos(false);
+                      }}
+                      className={`px-3 py-1 rounded-full text-[11px] font-bold transition-colors ${
+                        galleryAlbum === alb
+                          ? "bg-stone-900 text-white"
+                          : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                      }`}
+                    >
+                      {alb}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {activeEvent.galleryImages.map((photo) => (
-                <div key={photo.id} className={`${activeTemplate.cardStyle} overflow-hidden group`}>
-                  <div className="aspect-[4/3] overflow-hidden bg-stone-100">
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+              {visiblePhotos.map((photo, idx) => (
+                <button
+                  key={photo.id}
+                  type="button"
+                  onClick={() => setLightboxIndex(idx)}
+                  className={`${activeTemplate.cardStyle} overflow-hidden group text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-coral-500`}
+                >
+                  <div className="aspect-[4/3] overflow-hidden bg-stone-100 relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={photo.url}
                       alt={photo.caption || "Celebration moment"}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
+                    {photo.album && (
+                      <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/55 text-white backdrop-blur-sm">
+                        {photo.album}
+                      </span>
+                    )}
                   </div>
                   {photo.caption && (
-                    <div className="p-3 text-xs font-medium text-stone-700 text-center">
+                    <div className="p-2.5 text-xs font-medium text-stone-700 truncate text-center">
                       {photo.caption}
                     </div>
                   )}
-                </div>
+                </button>
               ))}
             </div>
+
+            {filteredPhotos.length > 6 && (
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAllPhotos(!showAllPhotos)}
+                  className="px-5 py-2.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-800 text-xs font-bold transition-colors"
+                >
+                  {showAllPhotos
+                    ? "Show fewer photos"
+                    : `View all ${filteredPhotos.length} photos (+${filteredPhotos.length - 6} more)`}
+                </button>
+              </div>
+            )}
           </section>
+        )}
+
+        {/* LIGHTBOX MODAL */}
+        {lightboxIndex !== null && filteredPhotos[lightboxIndex] && (
+          <div
+            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-4"
+            onClick={() => setLightboxIndex(null)}
+          >
+            <div className="w-full max-w-4xl flex items-center justify-between text-white pb-3" onClick={(e) => e.stopPropagation()}>
+              <span className="text-xs font-bold text-stone-300">
+                {lightboxIndex + 1} / {filteredPhotos.length}
+                {filteredPhotos[lightboxIndex].album ? ` • ${filteredPhotos[lightboxIndex].album}` : ""}
+              </span>
+              <button
+                type="button"
+                onClick={() => setLightboxIndex(null)}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="relative w-full max-w-4xl flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+              {filteredPhotos.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setLightboxIndex((lightboxIndex - 1 + filteredPhotos.length) % filteredPhotos.length)
+                  }
+                  className="absolute left-2 p-2.5 rounded-full bg-black/60 hover:bg-black/80 text-white z-10"
+                  aria-label="Previous photo"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+              )}
+
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={filteredPhotos[lightboxIndex].url}
+                alt={filteredPhotos[lightboxIndex].caption || "Gallery preview"}
+                className="max-h-[76vh] max-w-full rounded-2xl object-contain shadow-2xl"
+              />
+
+              {filteredPhotos.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setLightboxIndex((lightboxIndex + 1) % filteredPhotos.length)}
+                  className="absolute right-2 p-2.5 rounded-full bg-black/60 hover:bg-black/80 text-white z-10"
+                  aria-label="Next photo"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+
+            {filteredPhotos[lightboxIndex].caption && (
+              <p className="mt-3 text-xs sm:text-sm text-stone-200 text-center max-w-xl">
+                {filteredPhotos[lightboxIndex].caption}
+              </p>
+            )}
+          </div>
         )}
 
         {/* CASH REGISTRY / GIFT SECTION */}

@@ -56,6 +56,7 @@ export default function CoupleDashboardPage() {
   const [activeTab, setActiveTab] = useState<StudioTab>("builder");
   const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("mobile");
   const [photoCaption, setPhotoCaption] = useState("");
+  const [photoAlbum, setPhotoAlbum] = useState<"Moments" | "Pre-Wedding" | "Traditional">("Moments");
   const [photoError, setPhotoError] = useState<string | null>(null);
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,10 +78,11 @@ export default function CoupleDashboardPage() {
     setPhotoError(null);
     try {
       const uploaded = await Promise.all(
-        files.slice(0, 6).map(async (f) => ({
+        files.map(async (f) => ({
           id: `ph-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          url: await compressImageFile(f, 900, 0.8),
+          url: await compressImageFile(f, 800, 0.72),
           caption: photoCaption.trim(),
+          album: photoAlbum,
         }))
       );
       updateSiteConfig({
@@ -530,17 +532,40 @@ export default function CoupleDashboardPage() {
 
                 {/* Gallery Photos */}
                 <div className="space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-stone-800">
+                      Gallery ({(siteConfig.galleryImages || []).length} photos)
+                    </span>
+                    {(siteConfig.galleryImages || []).length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => updateSiteConfig({ galleryImages: [] })}
+                        className="text-[11px] font-bold text-rose-600 hover:underline"
+                      >
+                        Clear all
+                      </button>
+                    )}
+                  </div>
                   <div className="flex flex-col sm:flex-row gap-2">
+                    <select
+                      value={photoAlbum}
+                      onChange={(e) => setPhotoAlbum(e.target.value as typeof photoAlbum)}
+                      className="px-3 py-2 rounded-xl border border-stone-300 text-xs bg-white font-semibold"
+                    >
+                      <option value="Moments">Album: Moments</option>
+                      <option value="Pre-Wedding">Album: Pre-Wedding</option>
+                      <option value="Traditional">Album: Traditional</option>
+                    </select>
                     <input
                       type="text"
-                      placeholder="Optional caption (e.g. Zanzibar Proposal)"
+                      placeholder="Optional caption"
                       value={photoCaption}
                       onChange={(e) => setPhotoCaption(e.target.value)}
                       className="flex-1 px-3 py-2 rounded-xl border border-stone-300 text-xs"
                     />
                     <label className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-coral-500 hover:bg-coral-600 text-white text-xs font-bold cursor-pointer transition-colors shrink-0">
                       <ImagePlus className="w-3.5 h-3.5" />
-                      <span>Add Gallery Photos</span>
+                      <span>Add Photos</span>
                       <input
                         type="file"
                         accept="image/*"

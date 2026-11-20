@@ -822,6 +822,7 @@ export interface GalleryPhoto {
   id: string;
   url: string;
   caption: string;
+  album?: "Pre-Wedding" | "Traditional" | "Moments";
 }
 
 export interface EventProfilePreset {
