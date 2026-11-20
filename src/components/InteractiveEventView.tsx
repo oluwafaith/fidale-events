@@ -69,6 +69,8 @@ export function InteractiveEventView({
     selectedTemplateId: activeTemplate.id,
     heroTitle: siteConfig.heroTitle,
     ourStory: siteConfig.ourStory,
+    coverImage: siteConfig.coverImage,
+    galleryImages: siteConfig.galleryImages,
     tradVenue: siteConfig.tradVenue,
     tradTime: siteConfig.tradTime,
     whiteVenue: siteConfig.whiteVenue,
@@ -98,6 +100,16 @@ export function InteractiveEventView({
     .filter(Boolean)
     .slice(0, 2)
     .join(" & ");
+
+  const heroBgStyle: React.CSSProperties = activeEvent.coverImage
+    ? {
+        backgroundImage: `linear-gradient(to bottom, rgba(15, 10, 10, 0.52), rgba(15, 10, 10, 0.72)), url(${activeEvent.coverImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }
+    : {
+        background: `linear-gradient(135deg, ${activeTemplate.primaryColor} 0%, ${activeTemplate.secondaryColor} 58%, ${activeTemplate.accentColor} 100%)`,
+      };
 
   // RSVP Form State
   const [rsvpName, setRsvpName] = useState("");
@@ -212,18 +224,31 @@ export function InteractiveEventView({
               </div>
 
               <div className="md:col-span-5">
-                <div className="aspect-[4/5] rounded-2xl bg-gradient-to-br from-stone-800 to-stone-950 text-white p-6 flex flex-col justify-between shadow-xl border border-stone-200">
-                  <div className="flex justify-between text-[10px] uppercase tracking-widest text-stone-400">
+                <div
+                  style={
+                    activeEvent.coverImage
+                      ? {
+                          backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.15)), url(${activeEvent.coverImage})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }
+                      : undefined
+                  }
+                  className="aspect-[4/5] rounded-2xl bg-gradient-to-br from-stone-800 to-stone-950 text-white p-6 flex flex-col justify-between shadow-xl border border-stone-200 overflow-hidden"
+                >
+                  <div className="flex justify-between text-[10px] uppercase tracking-widest text-stone-300">
                     <span>Save the Date</span>
                     <span>WAT 10:00 AM</span>
                   </div>
-                  <div className="text-center space-y-2">
-                    <div className="w-16 h-16 rounded-full border border-amber-300/50 mx-auto flex items-center justify-center text-xl font-bold text-amber-200">
-                      {initials}
+                  {!activeEvent.coverImage && (
+                    <div className="text-center space-y-2">
+                      <div className="w-16 h-16 rounded-full border border-amber-300/50 mx-auto flex items-center justify-center text-xl font-bold text-amber-200">
+                        {initials}
+                      </div>
+                      <div className="text-xs text-stone-300 uppercase tracking-widest">16 Days To Go</div>
                     </div>
-                    <div className="text-xs text-stone-300 uppercase tracking-widest">16 Days To Go</div>
-                  </div>
-                  <div className="text-[11px] text-center text-stone-400 border-t border-white/10 pt-3">
+                  )}
+                  <div className="text-[11px] text-center text-stone-200 border-t border-white/20 pt-3">
                     {activeEvent.tradVenue.split(",")[0]}
                   </div>
                 </div>
@@ -232,7 +257,7 @@ export function InteractiveEventView({
           </div>
         </section>
       ) : layout === "royal-crest" ? (
-        <section className={`${activeTemplate.previewGradient} text-white py-14 sm:py-20 px-4 relative overflow-hidden text-center border-b-4 border-amber-400/70`}>
+        <section style={heroBgStyle} className="text-white py-14 sm:py-20 px-4 relative overflow-hidden text-center border-b-4 border-amber-400/70">
           <div className="max-w-3xl mx-auto space-y-5 relative z-10">
             {/* Royal Monogram Crest */}
             <div className="w-20 h-20 rounded-full border-2 border-amber-300/80 bg-black/25 backdrop-blur-md mx-auto flex flex-col items-center justify-center shadow-lg">
@@ -272,7 +297,7 @@ export function InteractiveEventView({
           </div>
         </section>
       ) : layout === "emerald-marquee" ? (
-        <section className={`${activeTemplate.previewGradient} text-white p-4 sm:p-8`}>
+        <section style={heroBgStyle} className="text-white p-4 sm:p-8">
           <div className="max-w-4xl mx-auto border-2 border-amber-300/50 rounded-3xl p-8 sm:p-14 text-center space-y-5 bg-black/20 backdrop-blur-sm">
             <div className="text-[11px] font-bold uppercase tracking-[0.3em] text-amber-200">
               Together with their families
@@ -309,7 +334,7 @@ export function InteractiveEventView({
       ) : layout === "heritage-arch" ? (
         <section className="bg-[#FFF8F0] pt-10 pb-12 px-4 border-b border-amber-200/80">
           <div className="max-w-3xl mx-auto">
-            <div className={`${activeTemplate.previewGradient} text-white rounded-t-[140px] rounded-b-3xl p-8 sm:p-14 text-center space-y-4 shadow-xl border-4 border-amber-200/70`}>
+            <div style={heroBgStyle} className="text-white rounded-t-[140px] rounded-b-3xl p-8 sm:p-14 text-center space-y-4 shadow-xl border-4 border-amber-200/70">
               <div className="text-[11px] uppercase tracking-[0.25em] text-amber-200 font-bold">
                 Cultural Heritage & Union • {activeEvent.hashtag}
               </div>
@@ -331,7 +356,7 @@ export function InteractiveEventView({
           </div>
         </section>
       ) : (
-        <section className={`${activeTemplate.previewGradient} text-white py-14 sm:py-20 px-4 relative overflow-hidden text-center`}>
+        <section style={heroBgStyle} className="text-white py-14 sm:py-20 px-4 relative overflow-hidden text-center">
           <div className="max-w-3xl mx-auto space-y-4 relative z-10">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/25 backdrop-blur-sm border border-white/20 text-xs font-bold uppercase tracking-wider">
               {isBabyShower && <Baby className="w-3.5 h-3.5 text-pink-300" />}
@@ -536,6 +561,37 @@ export function InteractiveEventView({
             </div>
           </div>
         </section>
+
+        {/* PHOTO GALLERY (When host uploads photos) */}
+        {activeEvent.galleryImages && activeEvent.galleryImages.length > 0 && (
+          <section className="space-y-4">
+            <div className="text-center">
+              <span className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${activeTemplate.accentBadge}`}>
+                Photo Gallery
+              </span>
+              <h2 className="text-2xl font-bold mt-1">Our Moments</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {activeEvent.galleryImages.map((photo) => (
+                <div key={photo.id} className={`${activeTemplate.cardStyle} overflow-hidden group`}>
+                  <div className="aspect-[4/3] overflow-hidden bg-stone-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photo.url}
+                      alt={photo.caption || "Celebration moment"}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  {photo.caption && (
+                    <div className="p-3 text-xs font-medium text-stone-700 text-center">
+                      {photo.caption}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* CASH REGISTRY / GIFT SECTION */}
         <section id="registry-section" className="space-y-4">

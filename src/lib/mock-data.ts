@@ -818,6 +818,12 @@ export const VENDOR_LEADS_MOCK: VendorLead[] = [
   },
 ];
 
+export interface GalleryPhoto {
+  id: string;
+  url: string;
+  caption: string;
+}
+
 export interface EventProfilePreset {
   id: string;
   category: EventCategory;
@@ -830,6 +836,8 @@ export interface EventProfilePreset {
   selectedTemplateId: string;
   heroTitle: string;
   ourStory: string;
+  coverImage?: string;
+  galleryImages?: GalleryPhoto[];
   tradVenue: string;
   tradTime: string;
   whiteVenue: string;

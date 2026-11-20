@@ -26,6 +26,7 @@ import {
   EventCategory,
   SAMPLE_EVENTS,
   EventProfilePreset,
+  GalleryPhoto,
 } from "@/lib/mock-data";
 
 export interface CoupleSiteConfig {
@@ -38,6 +39,8 @@ export interface CoupleSiteConfig {
   selectedTemplateId: string;
   heroTitle: string;
   ourStory: string;
+  coverImage?: string;
+  galleryImages: GalleryPhoto[];
   tradVenue: string;
   tradTime: string;
   whiteVenue: string;
@@ -120,8 +123,12 @@ const DEFAULT_SITE_CONFIG: CoupleSiteConfig = {
   showGiftAmountsPublicly: true,
   isPremiumCouple: false,
   customDomain: "adaezeandtunde.ng",
+  coverImage: undefined,
+  galleryImages: [],
   rsvpQuestions: SAMPLE_EVENTS[0].rsvpQuestions,
 };
+
+const SITE_CONFIG_KEY = "fidale_site_config_v1";
 
 const FidaleEventsContext = createContext<FidaleEventsContextType | undefined>(undefined);
 
@@ -130,6 +137,14 @@ export function FidaleEventsProvider({ children }: { children: React.ReactNode }
   const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
+    try {
+      const savedSite = localStorage.getItem(SITE_CONFIG_KEY);
+      if (savedSite) {
+        setSiteConfig((prev) => ({ ...prev, ...JSON.parse(savedSite) }));
+      }
+    } catch {
+      // Ignore corrupt localStorage
+    }
     ensureDemoAccounts().finally(() => {
       setUser(getSession());
       setAuthReady(true);
@@ -180,13 +195,21 @@ export function FidaleEventsProvider({ children }: { children: React.ReactNode }
   };
 
   const updateSiteConfig = (partial: Partial<CoupleSiteConfig>) => {
-    setSiteConfig((prev) => ({ ...prev, ...partial }));
+    setSiteConfig((prev) => {
+      const next = { ...prev, ...partial };
+      try {
+        localStorage.setItem(SITE_CONFIG_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore storage quota errors
+      }
+      return next;
+    });
   };
 
   const loadPresetEvent = (presetId: string) => {
     const preset = SAMPLE_EVENTS.find((e) => e.id === presetId || e.slug === presetId);
     if (preset) {
-      setSiteConfig({
+      updateSiteConfig({
         eventType: preset.category,
         coupleNames: preset.coupleNames,
         slug: preset.slug,
@@ -196,6 +219,8 @@ export function FidaleEventsProvider({ children }: { children: React.ReactNode }
         selectedTemplateId: preset.selectedTemplateId,
         heroTitle: preset.heroTitle,
         ourStory: preset.ourStory,
+        coverImage: preset.coverImage,
+        galleryImages: preset.galleryImages || [],
         tradVenue: preset.tradVenue,
         tradTime: preset.tradTime,
         whiteVenue: preset.whiteVenue,

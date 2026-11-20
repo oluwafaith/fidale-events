@@ -141,14 +141,32 @@ export default function TemplatesPage() {
                 }`}
               >
                 <div>
-                  {/* Visual Header Banner — Reflects Layout Variant */}
+                  {/* Visual Header Banner — Reflects Layout Variant + Explicit Gradient Fallback */}
                   <div
-                    className={`h-56 p-5 flex flex-col justify-between relative overflow-hidden ${
+                    style={
                       tpl.layoutVariant === "editorial-minimal"
-                        ? "bg-[#FAF8F5] text-stone-900 border-b border-stone-200"
-                        : `${tpl.previewGradient} text-white`
+                        ? { backgroundColor: "#FAF8F5" }
+                        : {
+                            background: `linear-gradient(135deg, ${tpl.primaryColor} 0%, ${tpl.secondaryColor} 58%, ${tpl.accentColor} 100%)`,
+                          }
+                    }
+                    className={`h-60 p-5 flex flex-col justify-between relative overflow-hidden ${
+                      tpl.layoutVariant === "editorial-minimal"
+                        ? "text-stone-900 border-b border-stone-200"
+                        : "text-white"
                     }`}
                   >
+                    {/* Subtle decorative pattern overlay */}
+                    {tpl.layoutVariant !== "editorial-minimal" && (
+                      <div
+                        className="absolute inset-0 opacity-15 pointer-events-none"
+                        style={{
+                          backgroundImage:
+                            "radial-gradient(circle at 20% 25%, rgba(255,255,255,0.6) 1px, transparent 1px), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.45) 1.5px, transparent 1.5px)",
+                          backgroundSize: "24px 24px",
+                        }}
+                      />
+                    )}
                     <div className="flex items-center justify-between relative z-10">
                       <span
                         className={`text-[11px] font-bold px-3 py-1 rounded-full ${

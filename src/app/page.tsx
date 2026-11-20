@@ -381,7 +381,18 @@ export default function HomePage() {
                 className="group rounded-3xl bg-white border border-stone-200 hover:border-stone-300 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
-                  <div className={`h-48 ${tpl.previewGradient} p-6 flex flex-col justify-between text-white relative`}>
+                  <div
+                    style={
+                      tpl.layoutVariant === "editorial-minimal"
+                        ? { backgroundColor: "#FAF8F5" }
+                        : {
+                            background: `linear-gradient(135deg, ${tpl.primaryColor} 0%, ${tpl.secondaryColor} 58%, ${tpl.accentColor} 100%)`,
+                          }
+                    }
+                    className={`h-48 p-6 flex flex-col justify-between relative ${
+                      tpl.layoutVariant === "editorial-minimal" ? "text-stone-900 border-b border-stone-200" : "text-white"
+                    }`}
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-black/25 backdrop-blur-sm">
                         {tpl.tag}

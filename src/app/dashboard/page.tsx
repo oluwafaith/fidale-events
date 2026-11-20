@@ -25,6 +25,8 @@ import {
   MessageCircle,
   Calendar,
   MapPin,
+  ImagePlus,
+  Trash2,
 } from "lucide-react";
 import { useFidaleEvents } from "@/context/FidaleEventsContext";
 import {
@@ -34,6 +36,7 @@ import {
   SAMPLE_EVENTS,
   EventCategory,
 } from "@/lib/mock-data";
+import { compressImageFile } from "@/lib/image-upload";
 
 type StudioTab = "builder" | "guests" | "registry" | "whatsapp";
 
@@ -52,6 +55,43 @@ export default function CoupleDashboardPage() {
 
   const [activeTab, setActiveTab] = useState<StudioTab>("builder");
   const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("mobile");
+  const [photoCaption, setPhotoCaption] = useState("");
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoError(null);
+    try {
+      const dataUrl = await compressImageFile(file, 1200, 0.82);
+      updateSiteConfig({ coverImage: dataUrl });
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : "Could not upload image.");
+    }
+    e.target.value = "";
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setPhotoError(null);
+    try {
+      const uploaded = await Promise.all(
+        files.slice(0, 6).map(async (f) => ({
+          id: `ph-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          url: await compressImageFile(f, 900, 0.8),
+          caption: photoCaption.trim(),
+        }))
+      );
+      updateSiteConfig({
+        galleryImages: [...(siteConfig.galleryImages || []), ...uploaded],
+      });
+      setPhotoCaption("");
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : "Could not upload gallery photo.");
+    }
+    e.target.value = "";
+  };
   const [guestFilter, setGuestFilter] = useState<string>("All");
   const [showAddGuestModal, setShowAddGuestModal] = useState(false);
   const [copiedMsg, setCopiedMsg] = useState<string | null>(null);
@@ -430,6 +470,117 @@ export default function CoupleDashboardPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Cover Photo & Event Gallery Uploader */}
+              <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm space-y-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-display font-bold text-base text-stone-900">
+                      Photos &amp; Cover Image
+                    </h3>
+                    <p className="text-xs text-stone-500">
+                      Upload a hero cover photo and moments gallery for your event website.
+                    </p>
+                  </div>
+                  <ImagePlus className="w-5 h-5 text-coral-500" />
+                </div>
+
+                {photoError && (
+                  <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700">
+                    {photoError}
+                  </div>
+                )}
+
+                {/* Cover Image */}
+                <div className="p-4 rounded-xl bg-stone-50 border border-stone-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-stone-800">Hero Cover Photo</span>
+                    {siteConfig.coverImage && (
+                      <button
+                        type="button"
+                        onClick={() => updateSiteConfig({ coverImage: undefined })}
+                        className="text-[11px] font-bold text-rose-600 hover:underline inline-flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Remove Cover</span>
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    {siteConfig.coverImage && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={siteConfig.coverImage}
+                        alt="Event cover"
+                        className="w-24 h-16 object-cover rounded-xl border border-stone-300 shrink-0"
+                      />
+                    )}
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold cursor-pointer transition-colors">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{siteConfig.coverImage ? "Replace Cover Photo" : "Upload Cover Photo"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCoverUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Gallery Photos */}
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      placeholder="Optional caption (e.g. Zanzibar Proposal)"
+                      value={photoCaption}
+                      onChange={(e) => setPhotoCaption(e.target.value)}
+                      className="flex-1 px-3 py-2 rounded-xl border border-stone-300 text-xs"
+                    />
+                    <label className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-coral-500 hover:bg-coral-600 text-white text-xs font-bold cursor-pointer transition-colors shrink-0">
+                      <ImagePlus className="w-3.5 h-3.5" />
+                      <span>Add Gallery Photos</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleGalleryUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  {(siteConfig.galleryImages || []).length > 0 && (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 pt-1">
+                      {(siteConfig.galleryImages || []).map((photo) => (
+                        <div key={photo.id} className="relative group rounded-xl overflow-hidden border border-stone-200 aspect-square bg-stone-100">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={photo.url}
+                            alt={photo.caption || "Gallery"}
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateSiteConfig({
+                                galleryImages: (siteConfig.galleryImages || []).filter(
+                                  (p) => p.id !== photo.id
+                                ),
+                              })
+                            }
+                            className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/70 text-white opacity-90 hover:bg-rose-600 transition-colors"
+                            title="Remove photo"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Right Live Interactive Preview Frame (5 cols) */}
@@ -480,7 +631,20 @@ export default function CoupleDashboardPage() {
                     previewMode === "mobile" ? "max-w-[330px]" : "w-full"
                   }`}
                 >
-                  <div className={`${selectedTemplate.previewGradient} p-6 text-white text-center transition-all duration-300`}>
+                  <div
+                    style={
+                      siteConfig.coverImage
+                        ? {
+                            backgroundImage: `linear-gradient(to bottom, rgba(15,10,10,0.45), rgba(15,10,10,0.7)), url(${siteConfig.coverImage})`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                          }
+                        : {
+                            background: `linear-gradient(135deg, ${selectedTemplate.primaryColor} 0%, ${selectedTemplate.secondaryColor} 58%, ${selectedTemplate.accentColor} 100%)`,
+                          }
+                    }
+                    className="p-6 text-white text-center transition-all duration-300"
+                  >
                     <div className="text-[10px] uppercase tracking-widest opacity-90">
                       {siteConfig.eventType || "Event"} • {siteConfig.hashtag}
                     </div>
